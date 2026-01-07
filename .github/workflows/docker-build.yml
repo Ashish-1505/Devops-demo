@@ -1,4 +1,4 @@
-name: Build and Push Frontend Image
+name: Build and Push Microservices Images
 
 on:
   push:
@@ -6,15 +6,29 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - frontend
+          - adservice
+          - cartservice
+          - checkoutservice
+          - currencyservice
+          - emailservice
+          - paymentservice
+          - productcatalogservice
+          - recommendationservice
+          - shippingservice
+          - shoppingassistantservice
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set image tag
-        id: vars
         run: |
           echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
@@ -27,11 +41,11 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            -t ${{ secrets.DOCKER_USERNAME }}/frontend:${{ env.SHORT_SHA }} \
-            -t ${{ secrets.DOCKER_USERNAME }}/frontend:latest \
-            ./src/frontend
+            -t ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:${{ env.SHORT_SHA }} \
+            -t ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest \
+            ./src/${{ matrix.service }}
 
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/frontend:${{ env.SHORT_SHA }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:${{ env.SHORT_SHA }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest

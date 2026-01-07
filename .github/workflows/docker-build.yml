@@ -40,15 +40,17 @@ jobs:
 
       - name: Build Docker image
         run: |
-          DOCKERFILE_PATH="./src/${{ matrix.service }}/Dockerfile"
+          SERVICE="${{ matrix.service }}"
+          DOCKERFILE="./src/$SERVICE/Dockerfile"
+          CONTEXT="./src/$SERVICE"
 
-          if [ ! -f "$DOCKERFILE_PATH" ]; then
-            DOCKERFILE_PATH="./src/${{ matrix.service }}/src/Dockerfile"
+          # .NET services need src/ as build context
+          if [[ "$SERVICE" =~ ^(cartservice|checkoutservice|paymentservice|shippingservice|emailservice)$ ]]; then
+            CONTEXT="./src/$SERVICE/src"
           fi
 
           docker build \
-            -f $DOCKERFILE_PATH \
-            -t ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:${{ env.SHORT_SHA }} \
-            -t ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest \
-            ./src/${{ matrix.service }}
-
+            -f $DOCKERFILE \
+            -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:${{ env.SHORT_SHA }} \
+            -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest \
+            $CONTEXT

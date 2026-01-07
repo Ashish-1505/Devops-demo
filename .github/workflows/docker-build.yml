@@ -60,3 +60,11 @@ jobs:
             -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:${{ env.SHORT_SHA }} \
             -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest \
             "$CONTEXT"
+
+      - name: Push Docker image
+        run: |
+          SERVICE="${{ matrix.service }}"
+
+          docker push ${{ secrets.DOCKER_USERNAME }}/$SERVICE:${{ env.SHORT_SHA }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest
+

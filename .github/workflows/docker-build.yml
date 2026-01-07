@@ -39,18 +39,24 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker image
+        shell: bash
         run: |
           SERVICE="${{ matrix.service }}"
-          DOCKERFILE="./src/$SERVICE/Dockerfile"
-          CONTEXT="./src/$SERVICE"
 
-          # .NET services need src/ as build context
-          if [[ "$SERVICE" =~ ^(cartservice|checkoutservice|paymentservice|shippingservice|emailservice)$ ]]; then
-            CONTEXT="./src/$SERVICE/src"
+          if [ "$SERVICE" = "cartservice" ]; then
+            DOCKERFILE="./src/cartservice/src/Dockerfile"
+            CONTEXT="./src/cartservice/src"
+          else
+            DOCKERFILE="./src/$SERVICE/Dockerfile"
+            CONTEXT="./src/$SERVICE"
           fi
 
+          echo "Service: $SERVICE"
+          echo "Dockerfile: $DOCKERFILE"
+          echo "Context: $CONTEXT"
+
           docker build \
-            -f $DOCKERFILE \
+            -f "$DOCKERFILE" \
             -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:${{ env.SHORT_SHA }} \
             -t ${{ secrets.DOCKER_USERNAME }}/$SERVICE:latest \
-            $CONTEXT
+            "$CONTEXT"
